@@ -1,0 +1,114 @@
+name: Release
+
+# 触发条件：push 形如 v1.2.3 / v0.1.0-beta.1 的 tag
+#   git tag v0.1.0
+#   git push origin v0.1.0
+on:
+  push:
+    tags:
+      - "v*"
+
+# OIDC 信任发布 + 拉代码所需的最小权限
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify tag matches package.json version
+        id: version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          TAG_VERSION="${TAG#v}"
+          PKG_NAME="$(node -p "require('./package.json').name")"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag $TAG (=$TAG_VERSION) does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+          # 预发布版本（含 -alpha / -beta / -rc / -next）发到 next 频道
+          if [[ "$PKG_VERSION" =~ -(alpha|beta|rc|next) ]]; then
+            DIST_TAG="next"
+          else
+            DIST_TAG="latest"
+          fi
+
+          {
+            echo "pkg_name=$PKG_NAME"
+            echo "version=$PKG_VERSION"
+            echo "dist_tag=$DIST_TAG"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "✓ Will publish $PKG_NAME@$PKG_VERSION with dist-tag=$DIST_TAG"
+
+      - name: Abort if version already published
+        shell: bash
+        run: |
+          PKG="${{ steps.version.outputs.pkg_name }}"
+          VER="${{ steps.version.outputs.version }}"
+          if npm view "$PKG@$VER" version > /dev/null 2>&1; then
+            echo "::error::$PKG@$VER 已经发布过，请 bump version 后重新打 tag"
+            exit 1
+          fi
+          echo "✓ $PKG@$VER 未发布，可以继续"
+
+      - name: Smoke test CLI
+        shell: bash
+        run: |
+          node ./bin/install.mjs --version
+          node ./bin/install.mjs --help > /dev/null
+          # 用一个不受沙箱保护的 agent 走完整复制流程
+          node ./bin/install.mjs install --agent gemini --scope project --yes
+          test -f .gemini/skills/dev-journal/SKILL.md
+          test -f .gemini/skills/dev-journal/templates/journal-template.md
+          node ./bin/install.mjs uninstall --agent gemini --scope project --yes
+          echo "✓ CLI smoke test passed"
+
+      - name: Publish to npm (OIDC if NPM_TOKEN is empty, else token)
+        shell: bash
+        # --provenance 让 npm 自动签发可验证的来源证书；OIDC 鉴权下会显示 "Built and signed on GitHub Actions"
+        run: npm publish --access public --provenance --tag "${{ steps.version.outputs.dist_tag }}"
+        env:
+          # 若仓库配置了 NPM_TOKEN secret，setup-node 写的 .npmrc 会用它
+          # 若未配置（空字符串），npm CLI (>= 11.5) 在 --provenance 模式下会回退到 GitHub OIDC
+          # 要求 npm 网站已为此包配置 Trusted Publisher
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Write job summary
+        shell: bash
+        run: |
+          PKG="${{ steps.version.outputs.pkg_name }}"
+          VER="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.dist_tag }}"
+          {
+            echo "## ✅ Published"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Package | \`$PKG\` |"
+            echo "| Version | \`$VER\` |"
+            echo "| Dist-tag | \`$TAG\` |"
+            echo "| npm | https://www.npmjs.com/package/$PKG/v/$VER |"
+            echo ""
+            echo "Install:"
+            echo ""
+            echo "\`\`\`bash"
+            echo "npx $PKG@$VER install"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"

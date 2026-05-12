@@ -1,0 +1,22 @@
+node_modules/
+*.log
+.DS_Store
+.idea/
+.vscode/
+dist/
+coverage/
+*.tgz
+.journal/
+
+# Local install artifacts when testing `dev-journal install` in this repo itself.
+# These are test outputs, not skill source. Real skill source lives in `skills/`.
+.claude/
+.cursor/
+.gemini/
+.codex/
+.copilot/
+.agents/
+.config/
+
+# Local smoke test dir
+.smoke-test/

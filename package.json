@@ -1,0 +1,44 @@
+{
+  "name": "@iskl/dev-journal",
+  "version": "0.1.0",
+  "description": "An Agent Skill that generates structured developer journals (modification summary, future-reader guide, collaborator-facing API notes, and a self-review) to <project>/.journal after a coding session. Cross-platform: installs into Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode, Copilot via a single CLI.",
+  "type": "module",
+  "bin": {
+    "dev-journal": "bin/install.mjs"
+  },
+  "files": [
+    "skills",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "agent-skill",
+    "agentskills.io",
+    "claude-code",
+    "cursor",
+    "gemini-cli",
+    "codex-cli",
+    "skill",
+    "journal",
+    "dev-journal",
+    "changelog",
+    "code-review"
+  ],
+  "author": "iskl",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iskl/skill_dev_journal.git"
+  },
+  "homepage": "https://github.com/iskl/skill_dev_journal#readme",
+  "bugs": {
+    "url": "https://github.com/iskl/skill_dev_journal/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

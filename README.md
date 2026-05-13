@@ -48,16 +48,16 @@ dev-journal install --agent all --scope user
 
 ```bash
 # 直接从 GitHub 仓库拉取（无需 npm 包）
-npx skills add iskl/skill_dev_journal
+npx skills add sklme/skill_dev_journal
 
 # 装到全局
-npx skills add iskl/skill_dev_journal -g
+npx skills add sklme/skill_dev_journal -g
 
 # 装到指定 Agent
-npx skills add iskl/skill_dev_journal -a cursor -a claude-code
+npx skills add sklme/skill_dev_journal -a cursor -a claude-code
 
 # 列出仓库内的可用 skill
-npx skills add iskl/skill_dev_journal --list
+npx skills add sklme/skill_dev_journal --list
 ```
 
 vercel-labs CLI 支持 50+ 个 Agent，项目级默认装到统一的 `.agents/skills/` 目录。
@@ -66,7 +66,7 @@ vercel-labs CLI 支持 50+ 个 Agent，项目级默认装到统一的 `.agents/s
 
 ```bash
 pnpm add -g agent-skill-porter
-sk add https://github.com/iskl/skill_dev_journal
+sk add https://github.com/sklme/skill_dev_journal
 ```
 
 支持跨 Agent 格式转换 + `--min-age` 版本钉选。
@@ -221,7 +221,7 @@ A：可以。编辑 `<安装目录>/templates/journal-template.md`，或者 fork
 ## 🧪 本地开发
 
 ```bash
-git clone https://github.com/iskl/skill_dev_journal.git
+git clone https://github.com/sklme/skill_dev_journal.git
 cd skill_dev_journal
 
 # 用本地版本试装

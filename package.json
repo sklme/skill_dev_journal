@@ -32,11 +32,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iskl/skill_dev_journal.git"
+    "url": "git+https://github.com/sklme/skill_dev_journal.git"
   },
-  "homepage": "https://github.com/iskl/skill_dev_journal#readme",
+  "homepage": "https://github.com/sklme/skill_dev_journal#readme",
   "bugs": {
-    "url": "https://github.com/iskl/skill_dev_journal/issues"
+    "url": "https://github.com/sklme/skill_dev_journal/issues"
   },
   "publishConfig": {
     "access": "public"

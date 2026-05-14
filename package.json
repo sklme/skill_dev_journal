@@ -10,8 +10,14 @@
     "skills",
     "bin",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release:tag": "node bin/release-tag.mjs"
+  },
   "engines": {
     "node": ">=18"
   },
@@ -40,5 +46,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0"
   }
 }

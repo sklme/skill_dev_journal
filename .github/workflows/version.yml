@@ -1,0 +1,76 @@
+name: Version
+
+# 触发条件：push 到 main
+#   - 若 `.changeset/*.md` 存在 → 自动开/更新 "Version Packages" PR（含 version bump + CHANGELOG）
+#   - 若 PR 已合并（无 pending changeset）→ 运行 release:tag 创建 v<version> tag,
+#     触发 .github/workflows/release.yml 完成发布
+on:
+  push:
+    branches:
+      - main
+
+# 需要写权限来：
+#   - 创建/更新 Version Packages PR（pull-requests: write）
+#   - 创建并 push tag（contents: write）
+permissions:
+  contents: write
+  pull-requests: write
+
+# 同时只跑一个 version job，避免开多份 PR
+concurrency:
+  group: version-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Version or Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # changesets 需要完整 history 才能正确生成 CHANGELOG
+          fetch-depth: 0
+          # 用默认 GITHUB_TOKEN push tag/PR；后续 tag push 会触发 release.yml
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Create Release PR or push tag
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          # 当有 pending changeset 时：action 会用此命令 bump 版本 + 写 CHANGELOG + 开 PR
+          version: npm run version
+          # 当无 pending changeset（Version PR 已合并）时：action 会运行此命令
+          # 我们用它来 push tag，由 release.yml 接管真正的 npm publish
+          publish: npm run release:tag
+          # PR 标题
+          title: "chore: release"
+          # PR 中的 commit message
+          commit: "chore: version packages"
+          # 不让 action 自己创建 GitHub Release（release.yml 不创建，CHANGELOG 已够；保持简单）
+          createGithubReleases: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Changesets Action result"
+            echo ""
+            echo "| key | value |"
+            echo "|---|---|"
+            echo "| hasChangesets | \`${{ steps.changesets.outputs.hasChangesets }}\` |"
+            echo "| published | \`${{ steps.changesets.outputs.published }}\` |"
+            echo "| pullRequestNumber | \`${{ steps.changesets.outputs.pullRequestNumber }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

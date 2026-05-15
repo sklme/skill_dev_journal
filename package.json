@@ -1,6 +1,6 @@
 {
   "name": "@iskl/dev-journal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An Agent Skill that generates structured developer journals (modification summary, future-reader guide, collaborator-facing API notes, and a self-review) to <project>/.journal after a coding session. Cross-platform: installs into Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode, Copilot via a single CLI.",
   "type": "module",
   "bin": {

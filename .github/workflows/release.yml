@@ -28,6 +28,14 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
+      # OIDC Trusted Publisher 自动鉴权需要 npm >= 11.5.1
+      # Node 22 当前 patch 自带的 npm 不一定够新，这里强制拉 latest，避免再次踩 ENEEDAUTH
+      - name: Ensure recent npm CLI
+        shell: bash
+        run: |
+          npm install -g npm@latest
+          echo "npm version: $(npm --version)"
+
       - name: Verify tag matches package.json version
         id: version
         shell: bash
